@@ -1,8 +1,8 @@
 # Thunkable + Allow2
 
-Instructions on using Allow2 to add Parental Freedom to your Thunkable app. https://thunkable.com
+Instructions on using Allow2 to add Parental Freedom to your Thunkable app. https://x.thunkable.com/signup?referrerId=allow2
 
-These instructions are also available as a public (remixable) example app here: https://x.thunkable.com/projects/60a50360a2ce930011586261
+These instructions are also available as a public (remixable) example app here: https://x.thunkable.com/projectPage/60a898bab06e1600125e0191
 
 ## Step 1: Pairing
 
