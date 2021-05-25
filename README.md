@@ -38,7 +38,109 @@ Note the conditional on error, this is not a complete implementation, you should
 
 ![pairing failure handling](./img/api-pair-failure.png)
 
-## Step 2: Status checks
+## Step 2: Understanding the result structure
+
+Calls to the api return either an error code (usually meaning a comms failure or the device has been un-paired), or a data body with a status 200.
+
+With an error code, you should either fix the call based on the parameters you have not supplied, or retry if offline/etc based on heuristics that make sense to you.
+
+However, the **special return status code of xxx** literally means the pairing does NOT exist and should be deleted from the device or app. This happens if the parent has removed the pairing and essentially is "releasing" that device or app from Allow2. You should reset the state to blank and un-paired with the ability for the parent to again pair with another Allow2 account.
+
+For the response body on a 200 response status code, the body will contain a number of these elements. For a status check it is simply the detail for the children of the paired account and a list of day types, as both of these may change and the PIN may change for children over time, you should call this periodically or on startup to make sure the children are able to log in with their PIN and the day type codes are all known to you for displaying status.
+
+For Usage checks and logging usage, there will be additional fields to describe the status of the check and if the child should be allowed to continue with the activity or not and for what reasons. The response even includes information based on each activity and the current and next day types. This allows you to present concise and important information to the child in response to checks.
+
+Example check or log activity response:
+```json
+{
+   "allowed":true,
+   "activities":{
+      "1":{
+         "id":1,
+         "name":"Internet",
+         "timed":true,
+         "units":"minutes",
+         "banned":false,
+         "remaining":0,
+         "cached":false,
+         "expires":1621923900,
+         "timeBlock":{
+            "allowed":true,
+            "remaining":276
+         }
+      },
+      "2":{
+         ...
+      },
+      "8":{
+         ...
+      }
+   },
+   "dayTypes":{
+      "today":{
+         "id":613,
+         "name":"School Day"
+      },
+      "tomorrow":{
+         "id":613,
+         "name":"School Day"
+      }
+   },
+   "allDayTypes":[
+      {
+         "id":573,
+         "name":"Weekend"
+      },
+      {
+         "id":592,
+         "name":"Weekday"
+      },
+      {
+         "id":613,
+         "name":"School Day"
+      },
+      {
+         "id":644,
+         "name":"Sick Day"
+      },
+      {
+         "id":662,
+         "name":"Holiday"
+      },
+      {
+         "id":1699,
+         "name":"No Limits"
+      },
+      {
+         "id":2138,
+         "name":"Just Mornings"
+      }
+   ],
+   "children":[
+      {
+         "id":168,
+         "name":"Bobbie",
+         "pin":"1872"
+      },
+      {
+         "id":169,
+         "name":"Mary",
+         "pin":"1213"
+      }
+   ],
+   "subscription":{
+      "active":true,
+      "type":1,
+      "maxChildren":6,
+      "childCount":2,
+      "deviceCount":12,
+      "serviceCount":48,
+      "financial":true
+   }
+}
+```
+
+## Step 3: Status checks
 
 Allow2 is designed to only be unpaired (disconnected) by the parent via the portal. Also, for shared devices, parents may add or remove children, or parents or children may change PINs for access. For these reasons, once an app is paired, you should poll Allow2 for status info on a "regular" basis (perhaps every few minutes, up to you).
 
@@ -50,7 +152,7 @@ If it still says it's active, you just persist the current child list to make su
 
 **EXAMPLE COMING SOON**
 
-## Step 3: Checking/Logging Usage
+## Step 4: Checking/Logging Usage
 
 With a paired device or app, you can lock out certain functions based on the childs access or remaining quota at that time. For instance, maybe if they have screen time, they can view the leaderboard, and if they have messaging quota, can still message friends. But they may be out of game time, so they cannot start a new game. Or you can choose to just make them not able to do anything if they ran out of game quota.
 
